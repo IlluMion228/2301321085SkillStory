@@ -1,0 +1,516 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SkillStory API",
+    "description": "SkillStory е интерактивна платформа за споделяне на практически проекти и уроци.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Developer Support",
+      "email": "support@skillstory.dev"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.skillstory.dev/v1",
+      "description": "Основен сървър"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Управление на потребителски акаунти"
+    },
+    {
+      "name": "SkillStories",
+      "description": "CRUD операции за истории"
+    },
+    {
+      "name": "Steps",
+      "description": "Управление на стъпки в историите"
+    },
+    {
+      "name": "Comments",
+      "description": "Управление на коментари"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [ "Users" ],
+        "summary": "Търсене и извличане на потребители",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Търсене по потребителско име"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Търсене по имейл"
+          },
+          {
+            "name": "fullName",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Търсене по пълно име"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Номер на страницата"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Размер на страницата"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [ "username", "email", "fullName" ]
+            },
+            "description": "Поле за сортиране"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [ "asc", "desc" ]
+            },
+            "description": "Посока на сортиране"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно извлечени потребители"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/users/register": {
+      "post": {
+        "tags": [ "Users" ],
+        "summary": "Регистрация на нов потребител",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [ "username", "password", "email" ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "maxLength": 50
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "fullName": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Успешна регистрация" },
+          "400": { "description": "Невалидни входни данни" }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [ "Users" ],
+        "summary": "Вход в системата",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [ "username", "password" ],
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Успешен вход и JWT токен" },
+          "401": { "description": "Грешни данни за вход" }
+        }
+      }
+    },
+    "/stories": {
+      "get": {
+        "tags": [ "SkillStories" ],
+        "summary": "Извличане на всички истории с филтриране, странициране и сортиране",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [ "title", "createdAt" ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [ "asc", "desc" ]
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Успешно извлечени истории" }
+        }
+      },
+      "post": {
+        "tags": [ "SkillStories" ],
+        "summary": "Създаване на нова история",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [ "title", "description" ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Историята е създадена" },
+          "400": { "description": "Невалидни входни данни" }
+        }
+      }
+    },
+    "/stories/{id}": {
+      "get": {
+        "tags": [ "SkillStories" ],
+        "summary": "Извличане на история по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Успешно извлечена история" },
+          "404": { "description": "Историята не е намерена" }
+        }
+      },
+      "put": {
+        "tags": [ "SkillStories" ],
+        "summary": "Редактиране на история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Успешно редактирана" },
+          "400": { "description": "Невалидни входни данни" },
+          "404": { "description": "Историята не е намерена" }
+        }
+      },
+      "delete": {
+        "tags": [ "SkillStories" ],
+        "summary": "Изтриване на история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Историята е изтрита" },
+          "404": { "description": "Историята не е намерена" }
+        }
+      }
+    },
+    "/stories/{id}/steps": {
+      "get": {
+        "tags": [ "Steps" ],
+        "summary": "Извличане на всички стъпки за история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Успешно извлечени стъпки" }
+        }
+      },
+      "post": {
+        "tags": [ "Steps" ],
+        "summary": "Добавяне на стъпка към история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [ "title", "content", "order" ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "order": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Стъпка създадена успешно" }
+        }
+      }
+    },
+    "/steps/{stepId}": {
+      "put": {
+        "tags": [ "Steps" ],
+        "summary": "Редактиране на стъпка",
+        "parameters": [
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "order": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Стъпката е обновена" }
+        }
+      },
+      "delete": {
+        "tags": [ "Steps" ],
+        "summary": "Изтриване на стъпка",
+        "parameters": [
+          {
+            "name": "stepId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Успешно изтрита" }
+        }
+      }
+    },
+    "/stories/{id}/comments": {
+      "get": {
+        "tags": [ "Comments" ],
+        "summary": "Извличане на коментари към история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Коментарите са извлечени успешно" }
+        }
+      },
+      "post": {
+        "tags": [ "Comments" ],
+        "summary": "Добавяне на коментар към история",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [ "content" ],
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "postedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Коментарът е добавен успешно" }
+        }
+      }
+    },
+    "/comments/{commentId}": {
+      "delete": {
+        "tags": [ "Comments" ],
+        "summary": "Изтриване на коментар",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Успешно изтрит" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
